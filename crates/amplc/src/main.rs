@@ -1,3 +1,13 @@
+mod lexer;
+
+use logos::Logos;
+
+use crate::lexer::Token;
+
 fn main() {
-    println!("Hello, world!");
+    let lexer = Token::lexer("(hello world)");
+
+    for token in lexer {
+        println!("{:?}", token);
+    }
 }
