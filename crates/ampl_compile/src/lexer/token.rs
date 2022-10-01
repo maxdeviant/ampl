@@ -16,7 +16,7 @@ pub enum TokenKind {
     #[token(r"\", operator_repr)]
     Lambda(ast::OperatorRepr),
 
-    #[regex("[a-zA-Z]+")]
+    #[regex(r"[\w\.:-]+")]
     Symbol,
 
     #[regex(r"[ \n]+", logos::skip)]

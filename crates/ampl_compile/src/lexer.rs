@@ -64,4 +64,44 @@ mod tests {
     fn lex_ascii_lambda() {
         check(r"\", TokenKind::Lambda(OperatorRepr::Ascii))
     }
+
+    #[test]
+    fn lex_alphabetic_symbol() {
+        check("apple", TokenKind::Symbol)
+    }
+
+    #[test]
+    fn lex_numeric_symbol() {
+        check("1234", TokenKind::Symbol)
+    }
+
+    #[test]
+    fn lex_alphanumeric_symbol() {
+        check("abc123", TokenKind::Symbol)
+    }
+
+    #[test]
+    fn lex_snake_case_symbol() {
+        check("first_name", TokenKind::Symbol)
+    }
+
+    #[test]
+    fn lex_screaming_snake_case_symbol() {
+        check("FIRST_NAME", TokenKind::Symbol)
+    }
+
+    #[test]
+    fn lex_kebab_case_symbol() {
+        check("first-name", TokenKind::Symbol)
+    }
+
+    #[test]
+    fn lex_version_symbol() {
+        check("v1.2.3", TokenKind::Symbol)
+    }
+
+    #[test]
+    fn lex_urn_symbol() {
+        check("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User", TokenKind::Symbol)
+    }
 }
