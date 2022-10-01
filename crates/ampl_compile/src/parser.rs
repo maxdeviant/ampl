@@ -7,15 +7,16 @@ use crate::lexer::Lexer;
 
 #[derive(Debug)]
 pub enum ParseError {
-    SyntaxError(String),
+    SyntaxError(Option<usize>, String),
 }
 
 impl ToString for ParseError {
     fn to_string(&self) -> String {
         match self {
-            Self::SyntaxError(reason) => {
-                format!("Syntax error: {}", reason)
-            }
+            Self::SyntaxError(position, reason) => match position {
+                Some(position) => format!("Syntax error at position {}: {}", position + 1, reason),
+                None => format!("Syntax error: {}", reason),
+            },
         }
     }
 }
@@ -32,7 +33,7 @@ impl<'a> Parser<'a> {
     }
 
     pub fn parse(&mut self) -> Result<ExprKind, ParseError> {
-        self.parse_expr()
+        self.parse_dot_expr()
     }
 
     fn peek(&mut self) -> Option<Token> {
@@ -53,9 +54,12 @@ impl<'a> Parser<'a> {
     fn consume(&mut self, ty: TokenKind, message: &str) -> Result<Token, ParseError> {
         if self.check(ty) {
             self.advance()
-                .ok_or(ParseError::SyntaxError("Empty".to_string()))
+                .ok_or(ParseError::SyntaxError(None, "Empty".to_string()))
         } else {
-            Err(ParseError::SyntaxError(message.to_string()))
+            Err(ParseError::SyntaxError(
+                self.peek().and_then(|mut token| token.span.next()),
+                message.to_string(),
+            ))
         }
     }
 
@@ -65,14 +69,11 @@ impl<'a> Parser<'a> {
 
         let mut operands = vec![];
         loop {
-            match self.parse_expr() {
-                Ok(expr) => operands.push(expr),
-                Err(_) => {}
-            }
-
             if self.peek().map(|token| token.kind) == Some(TokenKind::RightParen) {
                 break;
             }
+
+            operands.push(self.parse_expr()?);
         }
 
         self.consume(TokenKind::RightParen, "Expected ')'")?;

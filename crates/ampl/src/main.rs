@@ -1,3 +1,5 @@
+use std::process::exit;
+
 use ampl_compile::compile;
 use ampl_eval::eval;
 use clap::Parser;
@@ -12,9 +14,21 @@ struct Args {
 fn main() {
     let args = Args::parse();
 
-    let compile_result = compile(&args.expr).expect("compile error");
+    let compile_result = match compile(&args.expr) {
+        Ok(expr) => expr,
+        Err(err) => {
+            println!("{}", err.to_string());
+            exit(1)
+        }
+    };
 
-    let eval_result = eval(compile_result, &args.json).expect("evaluation error");
+    let eval_result = match eval(compile_result, &args.json) {
+        Ok(value) => value,
+        Err(err) => {
+            println!("{}", err);
+            exit(1)
+        }
+    };
 
     println!("{}", eval_result)
 }
