@@ -1,8 +1,8 @@
 use std::iter::Peekable;
 
+use ampl_ast::token::{Token, TokenKind};
 use ampl_ast::ExprKind;
 
-use crate::lexer::token::TokenKind;
 use crate::lexer::Lexer;
 
 #[derive(Debug)]
@@ -35,26 +35,22 @@ impl<'a> Parser<'a> {
         self.parse_expr()
     }
 
-    fn peek(&mut self) -> Option<TokenKind> {
-        self.lexer.peek().map(|(token, _)| *token)
+    fn peek(&mut self) -> Option<Token> {
+        self.lexer.peek().cloned()
     }
 
     fn check(&mut self, ty: TokenKind) -> bool {
         match self.peek() {
-            Some(token) => token == ty,
+            Some(token) => token.kind == ty,
             None => false,
         }
     }
 
-    fn advance(&mut self) -> Option<(TokenKind, &'a str)> {
+    fn advance(&mut self) -> Option<Token> {
         self.lexer.next()
     }
 
-    fn consume(
-        &mut self,
-        ty: TokenKind,
-        message: &str,
-    ) -> Result<(TokenKind, &'a str), ParseError> {
+    fn consume(&mut self, ty: TokenKind, message: &str) -> Result<Token, ParseError> {
         if self.check(ty) {
             self.advance()
                 .ok_or(ParseError::SyntaxError("Empty".to_string()))
@@ -74,7 +70,7 @@ impl<'a> Parser<'a> {
                 Err(_) => {}
             }
 
-            if self.peek() == Some(TokenKind::RightParen) {
+            if self.peek().map(|token| token.kind) == Some(TokenKind::RightParen) {
                 break;
             }
         }
@@ -85,9 +81,9 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_symbol_expr(&mut self) -> Result<ExprKind, ParseError> {
-        let (_, lexeme) = self.consume(TokenKind::Symbol, "Expected symbol")?;
+        let token = self.consume(TokenKind::Symbol, "Expected symbol")?;
 
-        Ok(ExprKind::Symbol(lexeme.to_string()))
+        Ok(ExprKind::Symbol(token.lexeme.to_string()))
     }
 
     fn parse_expr(&mut self) -> Result<ExprKind, ParseError> {

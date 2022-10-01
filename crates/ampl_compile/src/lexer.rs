@@ -1,5 +1,6 @@
 pub mod token;
 
+use ampl_ast::token::Token;
 use logos::Logos;
 
 use crate::lexer::token::TokenKind;
@@ -17,13 +18,18 @@ impl<'a> Lexer<'a> {
 }
 
 impl<'a> Iterator for Lexer<'a> {
-    type Item = (TokenKind, &'a str);
+    type Item = Token<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let token = self.lexer.next()?;
+        let kind = self.lexer.next()?;
         let lexeme = self.lexer.slice();
+        let span = self.lexer.span();
 
-        Some((token, lexeme))
+        Some(Token {
+            kind: kind.into(),
+            lexeme,
+            span,
+        })
     }
 }
 
@@ -102,6 +108,9 @@ mod tests {
 
     #[test]
     fn lex_urn_symbol() {
-        check("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User", TokenKind::Symbol)
+        check(
+            "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User",
+            TokenKind::Symbol,
+        )
     }
 }

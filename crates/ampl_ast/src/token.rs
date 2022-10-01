@@ -1,3 +1,5 @@
+use std::ops::Range;
+
 /// The representation of an Ampl operator.
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum OperatorRepr {
@@ -18,4 +20,11 @@ pub enum TokenKind {
     Symbol,
     Whitespace,
     Error,
+}
+
+#[derive(Debug, Clone)]
+pub struct Token<'a> {
+    pub kind: TokenKind,
+    pub lexeme: &'a str,
+    pub span: Range<usize>,
 }
