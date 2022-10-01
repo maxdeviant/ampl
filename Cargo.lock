@@ -10,6 +10,7 @@ dependencies = [
  "ampl_compile",
  "ampl_eval",
  "clap",
+ "serde_json",
 ]
 
 [[package]]
