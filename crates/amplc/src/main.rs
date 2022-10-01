@@ -1,13 +1,16 @@
 mod lexer;
+mod parser;
 
-use logos::Logos;
+use crate::parser::Parser;
 
-use crate::lexer::Token;
+pub enum Expr {
+    Symbol,
+}
 
 fn main() {
-    let lexer = Token::lexer("(hello world)");
+    let mut parser = Parser::new("(foo)");
 
-    for token in lexer {
-        println!("{:?}", token);
-    }
+    let result = parser.parse();
+
+    println!("{:?}", result);
 }
