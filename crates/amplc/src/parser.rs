@@ -1,12 +1,9 @@
 use std::iter::Peekable;
 
+use ampl_ast::ExprKind;
+
 use crate::lexer::token::TokenKind;
 use crate::lexer::Lexer;
-
-#[derive(Debug)]
-pub enum Expr {
-    Symbol(String),
-}
 
 #[derive(Debug)]
 pub enum ParseError {
@@ -34,7 +31,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    pub fn parse(&mut self) -> Result<Expr, ParseError> {
+    pub fn parse(&mut self) -> Result<ExprKind, ParseError> {
         self.parse_expr()
     }
 
@@ -66,11 +63,35 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn parse_expr(&mut self) -> Result<Expr, ParseError> {
+    fn parse_dot_expr(&mut self) -> Result<ExprKind, ParseError> {
         self.consume(TokenKind::LeftParen, "Expected '('")?;
-        let (_, lexeme) = self.consume(TokenKind::Symbol, "Expected symbol")?;
+        self.consume(TokenKind::Dot, "Expected '.'")?;
+
+        let mut operands = vec![];
+        loop {
+            match self.parse_expr() {
+                Ok(expr) => operands.push(expr),
+                Err(_) => {}
+            }
+
+            if self.peek() == Some(TokenKind::RightParen) {
+                break;
+            }
+        }
+
         self.consume(TokenKind::RightParen, "Expected ')'")?;
 
-        Ok(Expr::Symbol(lexeme.to_string()))
+        Ok(ExprKind::Dot(operands))
+    }
+
+    fn parse_symbol_expr(&mut self) -> Result<ExprKind, ParseError> {
+        let (_, lexeme) = self.consume(TokenKind::Symbol, "Expected symbol")?;
+
+        Ok(ExprKind::Symbol(lexeme.to_string()))
+    }
+
+    fn parse_expr(&mut self) -> Result<ExprKind, ParseError> {
+        self.parse_dot_expr()
+            .or_else(|_| self.parse_symbol_expr())
     }
 }

@@ -8,7 +8,7 @@ pub enum Expr {
 }
 
 fn main() {
-    let mut parser = Parser::new("(foo)");
+    let mut parser = Parser::new("(. foo bar baz)");
 
     let result = parser.parse();
 
