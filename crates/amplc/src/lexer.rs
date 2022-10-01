@@ -19,6 +19,9 @@ pub enum Token {
     #[token(")")]
     RightParen,
 
+    #[token(".")]
+    Dot,
+
     #[token("λ", operator_repr)]
     #[token(r"\", operator_repr)]
     Lambda(OperatorRepr),
@@ -82,6 +85,11 @@ mod tests {
     #[test]
     fn lex_right_paren() {
         check(")", Token::RightParen)
+    }
+
+    #[test]
+    fn lex_dot() {
+        check(".", Token::Dot)
     }
 
     #[test]
