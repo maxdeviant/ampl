@@ -14,11 +14,11 @@ pub enum EvalError {
     UnknownSymbol(String),
 }
 
-pub fn eval(expr: ExprKind, input: &str) -> Result<String, EvalError> {
+pub fn eval(expr: &ExprKind, input: &str) -> Result<String, EvalError> {
     let value: Value = serde_json::from_str(input)?;
 
     match expr {
-        ExprKind::Symbol(symbol) => Ok(symbol),
+        ExprKind::Symbol(symbol) => Ok(symbol.to_string()),
         ExprKind::List(exprs) => {
             let first_form = exprs.first().ok_or(EvalError::InvalidExpr)?;
             let arg_forms = &exprs[1..];
@@ -47,6 +47,17 @@ pub fn eval(expr: ExprKind, input: &str) -> Result<String, EvalError> {
                             Value::String(value) => value,
                             value => value.to_string(),
                         })
+                    }
+                    "=" => {
+                        let arg_forms = arg_forms
+                            .iter()
+                            .map(|expr| eval(expr, &input))
+                            .collect::<Result<Vec<_>, _>>()?;
+
+                        Ok(arg_forms
+                            .windows(2)
+                            .all(|pair| pair[0] == pair[1])
+                            .to_string())
                     }
                     _ => Err(EvalError::UnknownSymbol(symbol.to_string())),
                 },
@@ -79,7 +90,7 @@ mod tests {
             ExprKind::Symbol("baz".to_string()),
         ]);
 
-        let eval_result = eval(expr, &json.to_string()).unwrap();
+        let eval_result = eval(&expr, &json.to_string()).unwrap();
 
         assert_eq!(eval_result, "Hello, world!")
     }

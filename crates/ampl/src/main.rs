@@ -22,7 +22,7 @@ fn main() {
         }
     };
 
-    let eval_result = match eval(compile_result, &args.json) {
+    let eval_result = match eval(&compile_result, &args.json) {
         Ok(value) => value,
         Err(err) => {
             println!("{}", err);
@@ -42,7 +42,7 @@ mod tests {
     fn check(source: &str, input: &str, expected: &str) {
         let compile_result = compile(source).expect("compile error");
 
-        let eval_result = eval(compile_result, input).expect("evaluation error");
+        let eval_result = eval(&compile_result, input).expect("evaluation error");
 
         assert_eq!(&eval_result, expected)
     }
@@ -76,6 +76,44 @@ mod tests {
             })
             .to_string(),
             "4",
+        )
+    }
+
+    #[test]
+    fn equality_expr_is_true() {
+        check(
+            "(= (. two) 2)",
+            &json!({
+                "one": {
+                    "two": {
+                        "three": {
+                            "four": 4
+                        }
+                    }
+                },
+                "two": 2
+            })
+            .to_string(),
+            "true",
+        )
+    }
+
+    #[test]
+    fn equality_expr_is_false() {
+        check(
+            "(= (. one two) 2)",
+            &json!({
+                "one": {
+                    "two": {
+                        "three": {
+                            "four": 4
+                        }
+                    }
+                },
+                "two": 2
+            })
+            .to_string(),
+            "false",
         )
     }
 }

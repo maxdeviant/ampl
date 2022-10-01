@@ -16,6 +16,9 @@ pub enum TokenKind {
     #[token(r"\", operator_repr)]
     Lambda(ast::OperatorRepr),
 
+    #[token("=")]
+    Equal,
+
     #[regex(r"[\w\.:-]+")]
     Symbol,
 
@@ -33,6 +36,7 @@ impl From<TokenKind> for ast::TokenKind {
             TokenKind::RightParen => ast::TokenKind::RightParen,
             TokenKind::Dot => ast::TokenKind::Dot,
             TokenKind::Lambda(repr) => ast::TokenKind::Lambda(repr),
+            TokenKind::Equal => ast::TokenKind::Equal,
             TokenKind::Symbol => ast::TokenKind::Symbol,
             TokenKind::Whitespace => ast::TokenKind::Whitespace,
             TokenKind::Error => ast::TokenKind::Error,

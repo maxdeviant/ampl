@@ -17,6 +17,7 @@ pub enum TokenKind {
     RightParen,
     Dot,
     Lambda(OperatorRepr),
+    Equal,
     Symbol,
     Whitespace,
     Error,
