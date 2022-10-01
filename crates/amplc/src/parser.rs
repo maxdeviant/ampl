@@ -4,7 +4,7 @@ use crate::lexer::{Lexer, Token};
 
 #[derive(Debug)]
 pub enum Expr {
-    Symbol,
+    Symbol(String),
 }
 
 pub struct Parser<'a> {
@@ -33,11 +33,11 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn advance(&mut self) -> Option<Token> {
-        self.lexer.next().map(|(token, _)| token)
+    fn advance(&mut self) -> Option<(Token, &'a str)> {
+        self.lexer.next()
     }
 
-    fn consume(&mut self, ty: Token, message: &str) -> Result<Token, String> {
+    fn consume(&mut self, ty: Token, message: &str) -> Result<(Token, &'a str), String> {
         if self.check(ty) {
             self.advance().ok_or("Empty".to_string())
         } else {
@@ -47,9 +47,9 @@ impl<'a> Parser<'a> {
 
     fn parse_expr(&mut self) -> Result<Expr, String> {
         self.consume(Token::LeftParen, "Expected '('")?;
-        self.consume(Token::Symbol, "Expected symbol")?;
+        let (_, lexeme) = self.consume(Token::Symbol, "Expected symbol")?;
         self.consume(Token::RightParen, "Expected ')'")?;
 
-        Ok(Expr::Symbol)
+        Ok(Expr::Symbol(lexeme.to_string()))
     }
 }
