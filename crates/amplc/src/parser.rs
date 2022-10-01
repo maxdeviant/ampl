@@ -91,7 +91,6 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_expr(&mut self) -> Result<ExprKind, ParseError> {
-        self.parse_dot_expr()
-            .or_else(|_| self.parse_symbol_expr())
+        self.parse_dot_expr().or_else(|_| self.parse_symbol_expr())
     }
 }
