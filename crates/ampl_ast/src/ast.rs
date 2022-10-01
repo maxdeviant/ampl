@@ -3,5 +3,5 @@
 pub enum ExprKind {
     Dot(Vec<ExprKind>),
     Symbol(String),
-    List(Vec<ExprKind>)
+    List(Vec<ExprKind>),
 }

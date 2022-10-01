@@ -1,16 +1,7 @@
-mod lexer;
-mod parser;
-
-use crate::parser::Parser;
-
-pub enum Expr {
-    Symbol,
-}
+use ampl_compile::compile;
 
 fn main() {
-    let mut parser = Parser::new("(. foo bar baz)");
-
-    let result = parser.parse();
+    let result = compile("(. foo bar baz)");
 
     match result {
         Ok(expr) => println!("{:?}", expr),

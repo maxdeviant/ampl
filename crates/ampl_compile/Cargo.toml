@@ -1,9 +1,10 @@
 [package]
-name = "amplc"
+name = "ampl_compile"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ampl_compile = { path = "../ampl_compile" }
+ampl_ast = { path = "../ampl_ast" }
+logos = "0.12.1"

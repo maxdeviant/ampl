@@ -1,9 +1,12 @@
 [package]
-name = "amplc"
+name = "ampl"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+ampl_ast = { path = "../ampl_ast" }
 ampl_compile = { path = "../ampl_compile" }
+ampl_eval = { path = "../ampl_eval" }
+clap = { version = "4.0.7", features = ["derive"] }
