@@ -32,62 +32,41 @@ impl<'a> Parser<'a> {
         }
     }
 
-    pub fn parse(&mut self) -> Result<ExprKind, ParseError> {
-        self.parse_dot_expr()
+    pub fn parse(self) -> Result<ExprKind, ParseError> {
+        let tokens: Vec<Token> = self.lexer.collect();
+
+        let (expr, _) = parse(&tokens)?;
+
+        Ok(expr)
     }
+}
 
-    fn peek(&mut self) -> Option<Token> {
-        self.lexer.peek().cloned()
+fn parse<'a>(tokens: &'a [Token]) -> Result<(ExprKind, &'a [Token<'a>]), ParseError> {
+    let (token, rest) = tokens
+        .split_first()
+        .ok_or(ParseError::SyntaxError(Some(1), "No token".to_string()))?;
+
+    match token.kind {
+        TokenKind::LeftParen => parse_list(rest),
+        TokenKind::RightParen => Err(ParseError::SyntaxError(None, "Unexpected ')'".to_string())),
+        _ => Ok((ExprKind::Symbol(token.lexeme.to_string()), rest)),
     }
+}
 
-    fn check(&mut self, ty: TokenKind) -> bool {
-        match self.peek() {
-            Some(token) => token.kind == ty,
-            None => false,
-        }
-    }
+fn parse_list<'a>(tokens: &'a [Token]) -> Result<(ExprKind, &'a [Token<'a>]), ParseError> {
+    let mut list: Vec<ExprKind> = vec![];
+    let mut xs = tokens;
 
-    fn advance(&mut self) -> Option<Token> {
-        self.lexer.next()
-    }
-
-    fn consume(&mut self, ty: TokenKind, message: &str) -> Result<Token, ParseError> {
-        if self.check(ty) {
-            self.advance()
-                .ok_or(ParseError::SyntaxError(None, "Empty".to_string()))
-        } else {
-            Err(ParseError::SyntaxError(
-                self.peek().and_then(|mut token| token.span.next()),
-                message.to_string(),
-            ))
-        }
-    }
-
-    fn parse_dot_expr(&mut self) -> Result<ExprKind, ParseError> {
-        self.consume(TokenKind::LeftParen, "Expected '('")?;
-        self.consume(TokenKind::Dot, "Expected '.'")?;
-
-        let mut operands = vec![];
-        loop {
-            if self.peek().map(|token| token.kind) == Some(TokenKind::RightParen) {
-                break;
-            }
-
-            operands.push(self.parse_expr()?);
+    loop {
+        let (next_token, rest) = xs
+            .split_first()
+            .ok_or(ParseError::SyntaxError(None, "Expected ')'".to_string()))?;
+        if next_token.kind == TokenKind::RightParen {
+            return Ok((ExprKind::List(list), rest));
         }
 
-        self.consume(TokenKind::RightParen, "Expected ')'")?;
-
-        Ok(ExprKind::Dot(operands))
-    }
-
-    fn parse_symbol_expr(&mut self) -> Result<ExprKind, ParseError> {
-        let token = self.consume(TokenKind::Symbol, "Expected symbol")?;
-
-        Ok(ExprKind::Symbol(token.lexeme.to_string()))
-    }
-
-    fn parse_expr(&mut self) -> Result<ExprKind, ParseError> {
-        self.parse_dot_expr().or_else(|_| self.parse_symbol_expr())
+        let (expr, new_xs) = parse(&xs)?;
+        list.push(expr);
+        xs = new_xs;
     }
 }
