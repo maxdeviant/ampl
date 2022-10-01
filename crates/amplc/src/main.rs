@@ -12,5 +12,8 @@ fn main() {
 
     let result = parser.parse();
 
-    println!("{:?}", result);
+    match result {
+        Ok(expr) => println!("{:?}", expr),
+        Err(err) => println!("{}", err.to_string()),
+    }
 }

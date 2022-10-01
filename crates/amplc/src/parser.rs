@@ -7,6 +7,21 @@ pub enum Expr {
     Symbol(String),
 }
 
+#[derive(Debug)]
+pub enum ParseError {
+    SyntaxError(String),
+}
+
+impl ToString for ParseError {
+    fn to_string(&self) -> String {
+        match self {
+            Self::SyntaxError(reason) => {
+                format!("Syntax error: {}", reason)
+            }
+        }
+    }
+}
+
 pub struct Parser<'a> {
     lexer: Peekable<Lexer<'a>>,
 }
@@ -18,7 +33,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    pub fn parse(&mut self) -> Result<Expr, String> {
+    pub fn parse(&mut self) -> Result<Expr, ParseError> {
         self.parse_expr()
     }
 
@@ -37,15 +52,16 @@ impl<'a> Parser<'a> {
         self.lexer.next()
     }
 
-    fn consume(&mut self, ty: Token, message: &str) -> Result<(Token, &'a str), String> {
+    fn consume(&mut self, ty: Token, message: &str) -> Result<(Token, &'a str), ParseError> {
         if self.check(ty) {
-            self.advance().ok_or("Empty".to_string())
+            self.advance()
+                .ok_or(ParseError::SyntaxError("Empty".to_string()))
         } else {
-            Err(message.to_string())
+            Err(ParseError::SyntaxError(message.to_string()))
         }
     }
 
-    fn parse_expr(&mut self) -> Result<Expr, String> {
+    fn parse_expr(&mut self) -> Result<Expr, ParseError> {
         self.consume(Token::LeftParen, "Expected '('")?;
         let (_, lexeme) = self.consume(Token::Symbol, "Expected symbol")?;
         self.consume(Token::RightParen, "Expected ')'")?;
